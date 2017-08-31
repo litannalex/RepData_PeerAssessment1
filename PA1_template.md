@@ -5,30 +5,32 @@ date: "8/23/2017"
 output: html_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
+
 
 ### 1. Reading data
 Cleaning the workspace and loading the libraries
-```{r preparing workspace, message=FALSE}
+
+```r
 remove(list=ls())
 library(ggplot2)
 library(dplyr)
 ```
 Loading data assuming the zipped data was saved to the working directory
-```{r reading data}
+
+```r
 unzip("activity.zip", exdir = getwd())
 activity <- read.csv("activity.csv", na.strings = "NA")
 ```
 Converting dates into date format
-```{r converting dates}
+
+```r
 activity$date <- as.Date(activity$date)
 ```
 
 ### 2. Histogram of the total number of steps taken each day
 Aggregating the total number of steps by date and plotting with ggplot2
-```{r hist_total steps}
+
+```r
 total.steps.day <- summarise(group_by(activity, date), steps=sum(steps))
 ggplot(data=total.steps.day, aes(x=date, y=steps))+geom_bar(stat="identity")+
         ggtitle("Total Number Of Steps Taken Each Day")+xlab("Date")+
@@ -36,15 +38,34 @@ ggplot(data=total.steps.day, aes(x=date, y=steps))+geom_bar(stat="identity")+
         scale_x_date(date_labels="%d %b %y",date_breaks  ="5 days")
 ```
 
+```
+## Warning: Removed 8 rows containing missing values (position_stack).
+```
+
+![plot of chunk hist_total steps](figure/hist_total steps-1.png)
+
 ### 3. Mean and median number of steps taken each day
-```{r mean and median steps}
+
+```r
 mean(total.steps.day$steps, na.rm = TRUE)
+```
+
+```
+## [1] 10766.19
+```
+
+```r
 median(total.steps.day$steps, na.rm = TRUE)
+```
+
+```
+## [1] 10765
 ```
 
 ### 4. Time series plot of the average number of steps taken
 Aggregating the average number of steps by interval and plotting with ggplot2
-```{r timeser_average steps}
+
+```r
 average.steps.interval <- summarise(group_by(activity, interval), steps=mean(
         steps, na.rm = TRUE))
 ggplot(data=average.steps.interval, aes(x=interval, y=steps))+geom_line()+
@@ -53,21 +74,53 @@ ggplot(data=average.steps.interval, aes(x=interval, y=steps))+geom_line()+
         scale_x_continuous(breaks = pretty(average.steps.interval$interval, n=20))
 ```
 
+![plot of chunk timeser_average steps](figure/timeser_average steps-1.png)
+
 ### 5. The 5-minute interval that, on average, contains the maximum number of steps
-```{r max steps interval}
+
+```r
 average.steps.interval[average.steps.interval[,"steps"]==max(average.steps.interval$steps, na.rm=TRUE),]
+```
+
+```
+## # A tibble: 1 x 2
+##   interval    steps
+##      <int>    <dbl>
+## 1      835 206.1698
 ```
 
 ### 6. Code to describe and show a strategy for imputing missing data
 Taking a look at missing vales
-```{r counting missing data}
+
+```r
 sum(is.na(activity))
+```
+
+```
+## [1] 2304
+```
+
+```r
 NAs <- subset(activity, is.na(activity))
 NAs <- transform(NAs, count=1)
 table(NAs$date, NAs$count)
 ```
+
+```
+##             
+##                1
+##   2012-10-01 288
+##   2012-10-08 288
+##   2012-11-01 288
+##   2012-11-04 288
+##   2012-11-09 288
+##   2012-11-10 288
+##   2012-11-14 288
+##   2012-11-30 288
+```
 8 days are completely lost. These NAs will be substituted by the mean number of steps for a particular 5-minute interval across all days
-```{r imputing missing data}
+
+```r
 activity.complete <- activity
 for(i in 1:nrow(activity.complete)){
         if(is.na(activity.complete$steps[i])==TRUE){
@@ -76,19 +129,37 @@ for(i in 1:nrow(activity.complete)){
 }
 ```
 Checking if the NAs are gone
-```{r checking imputing}
+
+```r
 sum(is.na(activity.complete))
 ```
+
+```
+## [1] 0
+```
 Calculating new mean and median number for complete data
-```{r mean and median steps_imputed}
+
+```r
 total.steps.day.complete <- summarise(group_by(activity.complete, date), steps=sum(steps))
 mean(total.steps.day.complete$steps)
+```
+
+```
+## [1] 10766.19
+```
+
+```r
 median(total.steps.day.complete$steps)
+```
+
+```
+## [1] 10766.19
 ```
 
 ### 7. Histogram of the total number of steps taken each day after missing values are imputed
 Using imputed data, aggregating the total number of steps by date and plotting with ggplot2
-```{r hist_total steps_imputed}
+
+```r
 total.steps.day.complete <- summarise(group_by(activity.complete, date), steps=sum(steps))
 ggplot(data=total.steps.day.complete, aes(x=date, y=steps))+geom_bar(stat="identity")+
         ggtitle("Total Number Of Steps Taken Each Day_Complete Data")+xlab("Date")+
@@ -96,14 +167,18 @@ ggplot(data=total.steps.day.complete, aes(x=date, y=steps))+geom_bar(stat="ident
         scale_x_date(date_labels="%d %b %y",date_breaks  ="5 days")
 ```
 
+![plot of chunk hist_total steps_imputed](figure/hist_total steps_imputed-1.png)
+
 ### 8. Panel plot comparing the average number of steps taken per 5-minute interval across weekdays and weekends
 Recoding dates to "weekday" and "weekend" 
-```{r recoding dates to weekday(end)}
+
+```r
 activity.complete$daytype <- weekdays(activity.complete$date)
 activity.complete$day <- ifelse(activity.complete$daytype %in% c("Saturday", "Sunday"), "weekend", "weekday")
 ```
 Aggregating the average number of steps by weekday(end) and plotting with ggplot2
-```{r panelplot_average steps by weekday(end)}
+
+```r
 average.steps.interval.day <- summarise(group_by(activity.complete, interval, day), steps=mean(
         steps, na.rm = TRUE))
 ggplot(data=average.steps.interval.day, aes(x=interval, y=steps))+geom_line()+
@@ -112,3 +187,5 @@ ggplot(data=average.steps.interval.day, aes(x=interval, y=steps))+geom_line()+
         scale_x_continuous(breaks = pretty(average.steps.interval$interval, n=20))+
         facet_grid(day~.)
 ```
+
+![plot of chunk panelplot_average steps by weekday(end)](figure/panelplot_average steps by weekday(end)-1.png)
