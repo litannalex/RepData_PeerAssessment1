@@ -2,7 +2,9 @@
 title: "Peer Graded Assignment_1"
 author: "Anna Litvinenko"
 date: "8/23/2017"
-output: html_document
+output: 
+  html_document: 
+    keep_md: yes
 ---
 
 
@@ -32,17 +34,14 @@ Aggregating the total number of steps by date and plotting with ggplot2
 
 ```r
 total.steps.day <- summarise(group_by(activity, date), steps=sum(steps))
-ggplot(data=total.steps.day, aes(x=date, y=steps))+geom_bar(stat="identity")+
-        ggtitle("Total Number Of Steps Taken Each Day")+xlab("Date")+
-        ylab("Number of steps")+theme(axis.text.x=element_text(angle = 90, hjust = 0))+
-        scale_x_date(date_labels="%d %b %y",date_breaks  ="5 days")
+qplot(total.steps.day$steps, geom = "histogram", main="Total number of steps taken", xlab = "Number of steps", breaks = seq(0, 24000, by = 3000)) + scale_x_continuous(breaks = seq(0, 24000, by = 3000))
 ```
 
 ```
-## Warning: Removed 8 rows containing missing values (position_stack).
+## Warning: Removed 8 rows containing non-finite values (stat_bin).
 ```
 
-![plot of chunk hist_total steps](figure/hist_total steps-1.png)
+![plot of chunk hist_TotalSteps](figure/hist_TotalSteps-1.png)
 
 ### 3. Mean and median number of steps taken each day
 
@@ -74,7 +73,7 @@ ggplot(data=average.steps.interval, aes(x=interval, y=steps))+geom_line()+
         scale_x_continuous(breaks = pretty(average.steps.interval$interval, n=20))
 ```
 
-![plot of chunk timeser_average steps](figure/timeser_average steps-1.png)
+![plot of chunk timeser_AverageSteps](figure/timeser_AverageSteps-1.png)
 
 ### 5. The 5-minute interval that, on average, contains the maximum number of steps
 
@@ -161,13 +160,11 @@ Using imputed data, aggregating the total number of steps by date and plotting w
 
 ```r
 total.steps.day.complete <- summarise(group_by(activity.complete, date), steps=sum(steps))
-ggplot(data=total.steps.day.complete, aes(x=date, y=steps))+geom_bar(stat="identity")+
-        ggtitle("Total Number Of Steps Taken Each Day_Complete Data")+xlab("Date")+
-        ylab("Number of steps")+theme(axis.text.x=element_text(angle = 90, hjust = 0))+
-        scale_x_date(date_labels="%d %b %y",date_breaks  ="5 days")
+qplot(total.steps.day.complete$steps, geom = "histogram", main="Total number of steps taken_Complete Data",
+      xlab = "Number of steps", breaks = seq(0, 24000, by = 3000)) + scale_x_continuous(breaks = seq(0, 24000, by = 3000))
 ```
 
-![plot of chunk hist_total steps_imputed](figure/hist_total steps_imputed-1.png)
+![plot of chunk hist_TotalSteps_imputed](figure/hist_TotalSteps_imputed-1.png)
 
 ### 8. Panel plot comparing the average number of steps taken per 5-minute interval across weekdays and weekends
 Recoding dates to "weekday" and "weekend" 
@@ -188,4 +185,4 @@ ggplot(data=average.steps.interval.day, aes(x=interval, y=steps))+geom_line()+
         facet_grid(day~.)
 ```
 
-![plot of chunk panelplot_average steps by weekday(end)](figure/panelplot_average steps by weekday(end)-1.png)
+![plot of chunk panelplot_AverageStepsByWeekday(end)](figure/panelplot_AverageStepsByWeekday(end)-1.png)
